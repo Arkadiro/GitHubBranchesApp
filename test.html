@@ -1,29 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>GitHub Branches Test App</title>
     <style>
-        body{
-            margin:10px;
+        body {
+            margin: 10px;
         }
+
         #content {
-            display: flex;  
+            display: flex;
             flex-flow: row wrap;
             flex: 1 100%;
             justify-content: space-around;
-            align-content: center;          
+            align-content: center;
         }
+
         .header {
             background: #428bca;
             flex: 1;
             margin-top: 10px;
             margin-right: 10px;
-            padding:20px;
+            padding: 20px;
             text-align: center;
         }
+
         a {
             text-decoration: none;
             font-family: Arial, Helvetica, sans-serif;
@@ -35,59 +39,68 @@
 </head>
 
 <body>
-    <section id="content">
-    </section>
-
-
+    <section id="content"></section>
     <script>
-        const UserUrl = 'https://api.github.com/users/tinayuangao/repos';
-        const urlRequest =[];
+        const app = function () {
 
-        //get branch url
-        function getUrl(){
-            fetch(UserUrl)
-                .then(function(res){
-                    return res.json();
-                })
-                .then(function(data){
-                    const url = data[0].branches_url;
-                    if(url.includes('{')){
-                        const bracket = url.indexOf('{');
-                        const newUrl = url.slice(0, bracket);
-                        urlRequest.push(newUrl)
-                        showBranches(newUrl);
-                    }                   
-                })
-                .catch(function(err){
-                    console.log(`check: ${UserUrl}`);
-                    console.log(err);
-                });
-        };
-        //get branches and show it in UI
-        function showBranches(e){
-            fetch(e)
-                .then(function(res){
-                    return res.json();
-                })
-                .then(function(data){
-                    
-                    let content = document.getElementById('content');
-                    for(let i = 0; i < data.length; i++){
-                    content.innerHTML += `
-                    <div class="header">
-                    <a href="${data[i].commit.url}">${data[i].name}</a>
-                    </div>  
-                    `;
-                    }
-                })
-                .catch(function(err){
-                    console.log(`check url: ${urlRequest}`);
-                    console.log(err);
-                })
-        };
+            //Data
+            const urlRequest = [];
+            const UserUrl = ['https://api.github.com/users/tinayuangao/repos'];
 
-        getUrl();
+            //Get branch url
+            function getUrl(url) {
+                fetch(url)
+                    .then(function (res) {
+                        return res.json();
+                    })
+                    .then(function (data) {
 
+                        const url = data[0].branches_url;
+                        if (url.includes('{')) {
+                            const bracket = url.indexOf('{');
+                            const newUrl = url.slice(0, bracket);
+                            urlRequest.push(newUrl)
+                            showBranches(newUrl);
+                        }
+                    })
+                    .catch(function (err) {
+                        console.log(`check: ${UserUrl}`);
+                        console.log(err);
+                    });
+            };
+            
+            //Get branches and show it in UI
+            function showBranches(e) {
+                fetch(e)
+                    .then(function (res) {
+                        return res.json();
+                    })
+                    .then(function (data) {
+                        let content = document.getElementById('content');
+                        for (let i = 0; i < data.length; i++) {
+                            content.innerHTML += `
+                        <div class="header">
+                        <a href="${data[i].commit.url}">${data[i].name}</a>
+                        </div>  
+                        `;
+                        }
+                    })
+                    .catch(function (err) {
+                        console.log(`check url: ${urlRequest}`);
+                        console.log(err);
+                    })
+            };
+            return {
+                init: function () {
+                    getUrl(UserUrl);
+                    console.log('App is running...');
+                   // console.log(urlRequest);
+                }
+            }
+        }();
+
+        app.init();
     </script>
 </body>
+
 </html>
