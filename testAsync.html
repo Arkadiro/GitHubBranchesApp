@@ -10,6 +10,7 @@
         body {
             margin: 10px;
         }
+
         #content {
             display: flex;
             flex-flow: row wrap;
@@ -17,6 +18,7 @@
             justify-content: space-around;
             align-content: center;
         }
+
         .header {
             background: #428bca;
             flex: 1;
@@ -25,6 +27,7 @@
             padding: 20px;
             text-align: center;
         }
+
         a {
             text-decoration: none;
             font-family: Arial, Helvetica, sans-serif;
@@ -38,60 +41,59 @@
 <body>
     <section id="content"></section>
     <script>
-        const app = function () {
+
+        const App = function () {
+
             //Data
             const urlRequest = [];
             const UserUrl = ['https://api.github.com/users/tinayuangao/repos'];
+
             //Get branch url
-            function getUrl(url) {
-                fetch(url)
-                    .then(function (res) {
-                        return res.json();
-                    })
-                    .then(function (data) {
-                        const url = data[0].branches_url;
+            async function getUrl(url) {
+                try {
+                    const result = await fetch(url);
+                    const data = await result.json();
+                    const urlForBranch = data[0].branches_url;
+                    const urlForBranchClean = Clean(urlForBranch);
+                    const branches = await fetch(urlForBranchClean);
+                    const response = await branches.json();
+                    Publish();
+                    urlRequest.push(urlForBranchClean);
+
+                    function Clean(url) {
                         if (url.includes('{')) {
                             const bracket = url.indexOf('{');
                             const newUrl = url.slice(0, bracket);
-                            urlRequest.push(newUrl)
-                            showBranches(newUrl);
-                        }
-                    })
-                    .catch(function (err) {
-                        console.log(`check: ${UserUrl}`);
-                        console.log(err);
-                    });
-            };
-            
-            //Get branches and show it in UI
-            function showBranches(e) {
-                fetch(e)
-                    .then(function (res) {
-                        return res.json();
-                    })
-                    .then(function (data) {
+                            return newUrl;
+                        };
+                    }
+                    function Publish() {
                         let content = document.getElementById('content');
-                        for (let i = 0; i < data.length; i++) {
+                        for (let i = 0; i < response.length; i++) {
                             content.innerHTML += `
                         <div class="header">
-                        <a href="${data[i].commit.url}">${data[i].name}</a>
+                        <a href="${response[i].commit.url}">${response[i].name}</a>
                         </div>  
                         `;
-                        }
-                    })
-                    .catch(function (err) {
-                        console.log(`check url: ${urlRequest}`);
-                        console.log(err);
-                    })
+                        };
+                    }
+                } catch(error) {
+                    console.log(error);
+                }
             };
+
+
             return {
                 init: function () {
                     getUrl(UserUrl);
                     console.log('App is running...');
-                   // console.log(urlRequest);
+                    console.log(urlRequest);
                 }
             }
         }();
-        app.init();
+
+        App.init();
     </script>
 </body>
+
+</html>
