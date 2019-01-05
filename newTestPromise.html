@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>GitHub Branches Test App</title>
+  <style>
+    body {
+      margin: 10px;
+    }
+
+    .content {
+      display: flex;
+      flex-flow: row wrap;
+      flex: 1 100%;
+      justify-content: space-around;
+      align-content: center;
+    }
+
+    .header {
+      background: #428bca;
+      flex: 1;
+      margin-top: 10px;
+      margin-right: 10px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    a {
+      text-decoration: none;
+      font-family: Arial, Helvetica, sans-serif;
+      font-weight: bold;
+      color: #f9f9f9
+    }
+  </style>
+
+</head>
+
+<body>
+  <section>
+    <div id="container">
+
+    </div>
+  </section>
+  <script>
+
+    const App = function () {
+
+      //Data
+      const UserUrl = ['https://api.github.com/users/tinayuangao/repos'];
+      const branchCollector = [];
+
+      //Get branch url
+      async function getUrl(url) {
+        try {
+          const result = await fetch(url);
+          const data = await result.json();
+          data.forEach(project => branchCollector.push(project.name))
+          const urlForBranch = data.map(item => item.branches_url);
+          const urlForBranchClean = urlForBranch.map(branch => Clean(branch));
+          const projects = await Promise.all(urlForBranchClean.map(branch =>
+            fetch(branch).then(response => response.json())
+          ));
+          await Publish();
+          function Clean(url) {
+            if (url.includes('{')) {
+              const bracket = url.indexOf('{');
+              const newUrl = url.slice(0, bracket);
+              return newUrl;
+            };
+          }
+          function Publish() {
+            return new Promise((resolve, reject) => {
+              let container = document.getElementById('container');
+
+              projects.forEach((project, index) => {
+                container.innerHTML += `<h3>${branchCollector[index]}</h3><div class="content"></div>`;
+              });
+
+              let content = Array.from(document.getElementsByClassName('content'));
+
+              for (let i = 0; i < projects.length; i++) {
+                projects[i].forEach(item => content[i].innerHTML += `
+                                    <div class="header">
+                                        <a href="${item.commit.url}">${item.name}</a>
+                                    </div>`);
+              }
+              resolve()
+            });
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+
+      return {
+        init: function () {
+          getUrl(UserUrl);
+          console.log('App is running...');
+        }
+      }
+    }();
+
+    App.init();
+  </script>
+</body>
+
+</html>
